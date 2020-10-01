@@ -84,6 +84,7 @@ double CrossValidation_LOO(int combm, int i, vector<vector<int>> vi,  vector<vec
     initprediction.trunc;
     initprediction.close();
     
+    // Data<RealVector> predictioncalculate(vs.size() - 1, RealVector(1));
     for(int row = 0; row < vs.size() - 1; row++){
     	DataSetAll(row, combm, i, vi, /*vd,*/ vs, path_prediction);
 		// cout << "DataSetPredictionTemp success"<< endl;
@@ -98,6 +99,7 @@ double CrossValidation_LOO(int combm, int i, vector<vector<int>> vi,  vector<vec
 		// cout << "Random forest success" << endl;
 
 		auto prediction = pmodel(dataTest.inputs());
+		// predictioncalcul.element(a)(0) = prediction;
 
 		ofstream outFile;
 		outFile.open("./Temps/DataPredictionTemp.csv", ios::app);
@@ -135,19 +137,6 @@ double CrossValidation_LOO(int combm, int i, vector<vector<int>> vi,  vector<vec
     // cout << endl;
 	// // cout << prediction;
 
-
-
-
-    // vector<int> diagnose(vd.size());
-    // for(int a = 0; a < vd.size(); a++){
-    // 	// string diag = vs[a][vs.size() - 1];
-    // 	// int diagno = stoi(diag);
-    // 	// diagnose.push_back(diagno);
-    // 	cout << vd[a][vd[0].size() - 1] << " ";
-    // }
-    // cout << endl;
-
-
     unsigned int labels[vs.size() - 1];	//vd.size() = 66
     Data<unsigned int> label(vs.size() - 1,0);
     for(size_t a = 0; a < vs.size() - 1; a++){
@@ -160,21 +149,8 @@ double CrossValidation_LOO(int combm, int i, vector<vector<int>> vi,  vector<vec
 
     // cout << endl;
 
-    ////AUC test  @result is good!
- //    Data<RealVector> pred(10,RealVector(1));
-	// Data<unsigned int> lab(10,0);
 
-	// double values[10] = { 0 };
-	// unsigned int labs[10] = {1};
-	
-	// for(std::size_t i=0; i<10; i++) {
-	// 	pred.element(i)(0)= values[i];
-	// 	lab.element(i) = labs[i];
-	// }
-
-
-
-
+    //AUC 
     NegativeAUC<unsigned int, RealVector> auc;
     const double vvv = 0.0;
     AUC = auc.eval(label, predictioncal);
