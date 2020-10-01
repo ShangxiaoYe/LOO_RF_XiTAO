@@ -10,11 +10,10 @@ class combTAO : public AssemblyTask {
   int str;
   vector<vector<int>> vi;
   vector<vector<string>> vc;
-  vector<vector<double>> vd;
+  // vector<vector<double>> vd;
 
 public:
-  combTAO(int combm, int str, vector<vector<int>> vi, vector<vector<string>> vc, 
-    vector<vector<double>> vd) : AssemblyTask(1), combm(combm),str(str),vi(vi),vc(vc),vd(vd) { }
+  combTAO(int combm, int str, vector<vector<int>> vi, vector<vector<string>> vc) : AssemblyTask(1), combm(combm),str(str),vi(vi),vc(vc) { }
 
   void execute(int nthread) {
     int tid = nthread - leader;
@@ -22,7 +21,7 @@ public:
       
 
       // cout << "Test" << endl;
-      double auc = CrossValidation_LOO(combm, str, vi, vd, vc);
+      double auc = CrossValidation_LOO(combm, str, vi, vc);
       // cout << acc << " Test" <<endl;
 
       ofstream outFile;

@@ -1,6 +1,10 @@
 #include <iostream>
+#include <stdlib.h>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
+#include <vector>
+
 #include <shark/Data/Csv.h> //importing the file
 #include <shark/Statistics/ROC.h>
 #include <shark/Algorithms/Trainers/RFTrainer.h> //the random forest trainer
@@ -12,48 +16,53 @@
 using namespace std;
 using namespace shark;
 
-void DataSetAll(int row, int combm, int i, vector<vector<int>> vi, vector<vector<double>> v, vector<vector<string>> v2, string str){
-	ofstream outFile;
+
+void DataSetAll(int row, int combm, int i, vector<vector<int>> vi, /*vector<vector<double>> v,*/ vector<vector<string>> v2, string str){
+	double column[v2.size() - 2]; //save all data for each features  65
+    double median[vi[0].size()];   //median of vi[0].size() features  3  4 ...
+    int b = v2[0].size() - combm - 2;
+    for(int col = 0; col < vi[0].size(); col++){
+    	
+        int Effective_Number = 0;
+        for(int r = 1; r < v2.size(); r++){
+            if (v2[r][vi[r][col] + b] != "NA" && r != row){
+                double data_double;
+//                 cout<< stod(AllDataString[row][col]) << " ";
+                data_double = stod(v2[r][vi[r][col] + b]);
+                column[r - 1] = data_double;
+//                 cout<< a[r - 1] << " ";
+                Effective_Number++;
+            }
+        }
+        median[col] = EvaluateMedian(column, Effective_Number);
+        // cout<< "median_" << median[col]<<" ";
+    }
+    // cout << endl;
+
+    ofstream outFile;
 	outFile.open(str, ios::out);
-	// outFile << "4" << endl;
-	// cout << "test3" << endl;
-	vector<double> VD;
-	vector<vector<double>> VVd;
-	for(int a = 0; a < vi[0].size(); a++){
-		int j;
-		vector<double> Vd;
-		int b = v[0].size() -1 - combm;
-		// cout<< b << endl;
-		for(j = 0; j < v.size() ; j++){
-			if(j != row) {
-				Vd.push_back(v[j][vi[i][a] + b]);
-				int aaaa = v2[0].size() - 1;
-				VD.push_back(v[j][aaaa]);
-			}
-			// cout << "i: " << i << " j: " << j <<" v[j][vi[i][a]+b] " << v[j][vi[i][a]+b] << endl;
-		}
-		Vd.push_back(v[row][vi[i][a] + b]);
-		VD.push_back(v[row][v2[0].size()-1]);
-		VVd.push_back(Vd);
-	}
-		
-	VVd.push_back(VD);
+    for(int a  = 0; a < v2.size() - 1; a++){
+    	if(a != row){
+	    	for(int j = 0; j < vi[0].size(); j++){
+	    		if(v2[a + 1][vi[row][j] + b] == "NA") {
+	    			outFile << median[j] << ",";
+	    		} else{
+	    			outFile << v2[a +1][vi[row][j] + b] << ",";
+	    		}			
+	    	}
+	    	outFile << v2[a +1][v2[0].size() - 1] << endl;
+    	}
+    }
+    for(int j = 0; j < vi[0].size(); j++){
+    	if(v2[row + 1][vi[row][j]] == "NA") {
+	    	outFile << median[j] << ",";
+	    } else{
+	    	outFile << v2[row +1][vi[row][j] + b] << ",";
+	    }
+    }
+    outFile << v2[row + 1][v2[0].size() - 1] << endl;
+	
 
-
-	for(int c = 0; c < VVd[0].size(); c++){
-		for(int e = 0; e < VVd.size(); e++){
-			string datasave = to_string(VVd[e][c]);
-			if(e == VVd.size() - 1){
-				outFile << datasave << endl;
-				// cout << datasave << endl;
-			} else{
-				outFile << datasave << ",";
-				// cout << datasave << ",";
-			}
-			
-		}		
-
-	}
 	outFile.close();
 
 }
@@ -64,7 +73,7 @@ void DataSetAll(int row, int combm, int i, vector<vector<int>> vi, vector<vector
 
 
 
-double CrossValidation_LOO(int combm, int i, vector<vector<int>> vi, vector<vector<double>> vd, vector<vector<string>> vs){
+double CrossValidation_LOO(int combm, int i, vector<vector<int>> vi,  vector<vector<string>> vs){
 
 	double AUC = 0;
 	double result = 0;
@@ -75,14 +84,14 @@ double CrossValidation_LOO(int combm, int i, vector<vector<int>> vi, vector<vect
     initprediction.trunc;
     initprediction.close();
     
-    for(int row = 0; row < vd.size(); row++){
-    	DataSetAll(row, combm, i, vi, vd, vs, path_prediction);
+    for(int row = 0; row < vs.size() - 1; row++){
+    	DataSetAll(row, combm, i, vi, /*vd,*/ vs, path_prediction);
 		// cout << "DataSetPredictionTemp success"<< endl;
 
     	ClassificationDataset data;
 		importCSV(data, path_prediction, LAST_COLUMN, ',');
 		// cout<< "DataSetPredictionTemp readed" << endl;
-		ClassificationDataset dataTest = splitAtElement(data,vd.size() - 1);
+		ClassificationDataset dataTest = splitAtElement(data,vs.size() - 2);
 		RFTrainer<unsigned int> ptrainer;
 		RFClassifier<unsigned int> pmodel;
 		ptrainer.train(pmodel, data);
@@ -138,10 +147,13 @@ double CrossValidation_LOO(int combm, int i, vector<vector<int>> vi, vector<vect
     // }
     // cout << endl;
 
-    unsigned int labels[vd.size()];	//vd.size() = 66
-    Data<unsigned int> label(vd.size(),0);
-    for(size_t a = 0; a < vd.size(); a++){
-    	labels[a] = int(vd[a][vd[0].size() - 1]);
+
+    unsigned int labels[vs.size() - 1];	//vd.size() = 66
+    Data<unsigned int> label(vs.size() - 1,0);
+    for(size_t a = 0; a < vs.size() - 1; a++){
+    	double ddddd = stod(vs[a + 1][vs[0].size() - 1]);
+    	labels[a] = int(ddddd);
+    	// labels[a] = stoi(vs[a][vs[0].size() - 1]);
     	label.element(a) = labels[a];
     	// cout << label.element(a) << " ";
     }
@@ -149,16 +161,16 @@ double CrossValidation_LOO(int combm, int i, vector<vector<int>> vi, vector<vect
     // cout << endl;
 
     ////AUC test  @result is good!
-    Data<RealVector> pred(10,RealVector(1));
-	Data<unsigned int> lab(10,0);
+ //    Data<RealVector> pred(10,RealVector(1));
+	// Data<unsigned int> lab(10,0);
 
-	double values[10] = { 0 };
-	unsigned int labs[10] = {1};
+	// double values[10] = { 0 };
+	// unsigned int labs[10] = {1};
 	
-	for(std::size_t i=0; i<10; i++) {
-		pred.element(i)(0)= values[i];
-		lab.element(i) = labs[i];
-	}
+	// for(std::size_t i=0; i<10; i++) {
+	// 	pred.element(i)(0)= values[i];
+	// 	lab.element(i) = labs[i];
+	// }
 
 
 
