@@ -22,7 +22,7 @@ int main(){
      * read the .csv and save data(string) into a vector
      * @file FileRead.h
      */
-    FileRead fileRead("/home/shangxiao/桌面/main/Data/bacViralTOP20_new.csv");
+    FileRead fileRead("/home/shangxiao/桌面/main/Data/DATA_Viral_BacMen_112.csv");
     vector<vector<string>> AllDataString = fileRead.return_strArray();   //all data from .csv save in AllDataString data type "string"
 
   
