@@ -5,7 +5,7 @@ CXXFLAGS += -I$(XITAO_PATH)/include -I.
 CXXFLAGS += -O3
 CXXFLAGS += --std=c++11  ${EXTRAEINC}
 CXX=g++
-LIBS = -lm ${EXTRAELIBS} -L$(XITAO_PATH)/lib -lxitao -pthread -L$(SHARK_PATH)/lib -lshark -lboost_serialization
+LIBS = -lm ${EXTRAELIBS} -L$(XITAO_PATH)/lib -lxitao -pthread -L$(SHARK_PATH)/lib -lshark -lboost_serialization -ldialog -lncursesw -lm
 PROGRAM_OBJS=main.o 
 
 all: main

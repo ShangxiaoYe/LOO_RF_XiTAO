@@ -79,8 +79,9 @@ double CrossValidation_LOO(int combm, int i, vector<vector<int>> vi,  vector<vec
 	double result = 0;
 
 
-    string path_prediction = "./Temps/DataSetAllTemp.csv";
-    ofstream initprediction("./Temps/DataPredictionTemp.csv");
+    string path_prediction = "/home/shangxiao/桌面/main/Temps/DataSetAllTemp_" + to_string(i) + ".csv";
+    string path_init_prediction = "/home/shangxiao/桌面/main/Temps/DataPredictionTemp_" + to_string(i)+".csv";
+    ofstream initprediction(path_init_prediction.c_str());
     initprediction.trunc;
     initprediction.close();
     
@@ -102,14 +103,14 @@ double CrossValidation_LOO(int combm, int i, vector<vector<int>> vi,  vector<vec
 		// predictioncalcul.element(a)(0) = prediction;
 
 		ofstream outFile;
-		outFile.open("./Temps/DataPredictionTemp.csv", ios::app);
+		outFile.open(path_init_prediction.c_str(), ios::app);
 		outFile << prediction;
 		outFile.close();
 		// cout << "Write prediction into csv" << endl;
     }
 
 
-	FileRead Datapredictiontemp("./Temps/DataPredictionTemp.csv");
+	FileRead Datapredictiontemp(path_init_prediction);
     vector<vector<string>> datapredictiontemp = Datapredictiontemp.return_strArray();  
     vector<vector<double>> datapredictiontempd(datapredictiontemp.size(), vector<double>(datapredictiontemp[0].size()));
     for(int a = 0; a < datapredictiontemp.size(); a++){
